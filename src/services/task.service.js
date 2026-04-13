@@ -17,16 +17,26 @@ const createTask = async (DataTransfer, userId) => {
   return task;
 };
 
-const getAllTasks = async (user) => {
-  // Admin → all tasks
-  if (user.role === "admin") {
-    return Task.find().populate("createdBy assignedTo", "firstName email");
+const getAllTasks = async (user, query) => {
+  const { page = 1, limit = 5, status } = query;
+  const filter = {};
+
+  // Role-based filter
+  if (user.role !== "admin") {
+    filter.$or = [{ createdBy: user.userId }, { assignedTo: user.userId }];
   }
 
-  // User → only own + assigned
-  return Task.find({
-    $or: [{ createdBy: user.userId }, { assignedTo: user.userId }],
-  }).populate("createdBy assignedTo", "firstName email");
+  // Status filter
+  if (status) {
+    filter.status = status;
+  }
+
+  const tasks = await Task.find(filter)
+    .skip((page - 1) * limit)
+    .limit(Number(limit))
+    .sort({ createdAt: -1 });
+
+  return tasks;
 };
 
 const getTaskById = async (taskId, user) => {

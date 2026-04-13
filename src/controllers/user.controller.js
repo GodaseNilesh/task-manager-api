@@ -1,7 +1,7 @@
 const userService = require("../services/user.service");
 const { validateSignup } = require("../validators/user.validator");
 
-const signup = async (req, res) => {
+const signup = async (req, res, next) => {
   try {
     const error = validateSignup(req.body);
     if (error) {
@@ -15,13 +15,11 @@ const signup = async (req, res) => {
       data: user,
     });
   } catch (error) {
-    res.status(400).json({
-      message: error.message,
-    });
+    next(error);
   }
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -38,7 +36,7 @@ const login = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    res.status(401).json({ message: error.message });
+    next(error);
   }
 };
 
