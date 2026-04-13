@@ -1,7 +1,7 @@
 const taskService = require("../services/task.service");
 const { validateTask } = require("../validators/task.validator");
 
-const createTask = async (req, res) => {
+const createTask = async (req, res, next) => {
   try {
     const error = validateTask(req.body);
     if (error) {
@@ -12,50 +12,63 @@ const createTask = async (req, res) => {
     res.status(201).json({
       message: "Task created successfully",
       data: task,
+      success: true,
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    next(error);
   }
 };
 
-const getAllTasks = async (req, res) => {
+const getAllTasks = async (req, res, next) => {
   try {
-    const tasks = await taskService.getAllTasks(req.user);
-
-    res.json({ data: tasks });
+    const tasks = await taskService.getAllTasks(req.user, req.query);
+    res.json({
+      data: tasks,
+      success: true,
+      message: "Tasks fetched successfully",
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    next(error);
   }
 };
 
-const getTaskById = async (req, res) => {
+const getTaskById = async (req, res, next) => {
   try {
     const task = await await taskService.getTaskById(req.params.id, req.user);
-    res.json({ data: task });
+    res.json({
+      data: task,
+      success: true,
+      message: "Tasks fetched successfully",
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    next(error);
   }
 };
 
-const updateTaskById = async (req, res) => {
+const updateTaskById = async (req, res, next) => {
   try {
-    const task = await taskService.updateTaskById(req.params.id, req.body, req.user);
+    const task = await taskService.updateTaskById(
+      req.params.id,
+      req.body,
+      req.user,
+    );
 
     res.json({
       message: "Task updated successfully",
       data: task,
+      success: true
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    next(error);
   }
 };
 
-const deleteTaskById = async (req, res) => {
+const deleteTaskById = async (req, res, next) => {
   try {
     const result = await taskService.deleteTaskById(req.params.id, req.user);
     res.json(result);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    next(error);
   }
 };
 
